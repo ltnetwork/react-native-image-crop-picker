@@ -32,6 +32,15 @@ declare module "react-native-image-crop-picker" {
         cropperChooseText?: string;
     }
 
+    export interface AffineTransform {
+        a: number;
+        b: number;
+        c: number;
+        d: number;
+        tx: number;
+        ty: number;
+    }
+
     export interface Image {
         path: string;
         size: number;
@@ -40,7 +49,11 @@ declare module "react-native-image-crop-picker" {
         height: number;
         mime: string;
         exif: null | object;
-        cropRect: null | CropRect
+        cropRect: null | CropRect;
+        /**
+         * This property is undefined in Android. It's null for images in iOS.
+         */
+        preferredTransform?: null | AffineTransform;
     }
 
     export interface CropRect {

@@ -485,7 +485,14 @@ RCT_EXPORT_METHOD(openCropper:(NSDictionary *)options
                  [outputURL getResourceValue:&fileSizeValue
                                       forKey:NSURLFileSizeKey
                                        error:nil];
-
+                 NSDictionary *preferredTransform = @{
+                     @"a": [NSNumber numberWithFloat: track.preferredTransform.a],
+                     @"b": [NSNumber numberWithFloat: track.preferredTransform.b],
+                     @"c": [NSNumber numberWithFloat: track.preferredTransform.c],
+                     @"d": [NSNumber numberWithFloat: track.preferredTransform.d],
+                     @"tx": [NSNumber numberWithFloat: track.preferredTransform.tx],
+                     @"ty": [NSNumber numberWithFloat: track.preferredTransform.ty]
+                 };
                  completion([self createAttachmentResponse:[outputURL absoluteString]
                                                   withExif:nil
                                              withSourceURL:[sourceURL absoluteString]
@@ -499,6 +506,7 @@ RCT_EXPORT_METHOD(openCropper:(NSDictionary *)options
                                                   withRect:CGRectNull
                                           withCreationDate:forAsset.creationDate
                                       withModificationDate:forAsset.modificationDate
+                                    withPreferredTransform:preferredTransform
                              ]);
              } else {
                  completion(nil);
@@ -507,7 +515,7 @@ RCT_EXPORT_METHOD(openCropper:(NSDictionary *)options
      }];
 }
 
-- (NSDictionary*) createAttachmentResponse:(NSString*)filePath withExif:(NSDictionary*) exif withSourceURL:(NSString*)sourceURL withLocalIdentifier:(NSString*)localIdentifier withFilename:(NSString*)filename withWidth:(NSNumber*)width withHeight:(NSNumber*)height withMime:(NSString*)mime withSize:(NSNumber*)size withData:(NSString*)data withRect:(CGRect)cropRect withCreationDate:(NSDate*)creationDate withModificationDate:(NSDate*)modificationDate {
+- (NSDictionary*) createAttachmentResponse:(NSString*)filePath withExif:(NSDictionary*) exif withSourceURL:(NSString*)sourceURL withLocalIdentifier:(NSString*)localIdentifier withFilename:(NSString*)filename withWidth:(NSNumber*)width withHeight:(NSNumber*)height withMime:(NSString*)mime withSize:(NSNumber*)size withData:(NSString*)data withRect:(CGRect)cropRect withCreationDate:(NSDate*)creationDate withModificationDate:(NSDate*)modificationDate withPreferredTransform:(NSDictionary*)preferredTransform {
     return @{
              @"path": (filePath && ![filePath isEqualToString:(@"")]) ? filePath : [NSNull null],
              @"sourceURL": (sourceURL) ? sourceURL : [NSNull null],
@@ -522,6 +530,7 @@ RCT_EXPORT_METHOD(openCropper:(NSDictionary *)options
              @"cropRect": CGRectIsNull(cropRect) ? [NSNull null] : [ImageCropPicker cgRectToDictionary:cropRect],
              @"creationDate": (creationDate) ? [NSString stringWithFormat:@"%.0f", [creationDate timeIntervalSince1970]] : [NSNull null],
              @"modificationDate": (modificationDate) ? [NSString stringWithFormat:@"%.0f", [modificationDate timeIntervalSince1970]] : [NSNull null],
+             @"preferredTransform": (preferredTransform) ? preferredTransform : [NSNull null]
              };
 }
 
@@ -657,6 +666,7 @@ RCT_EXPORT_METHOD(openCropper:(NSDictionary *)options
                                                                              withRect:CGRectNull
                                                                      withCreationDate:phAsset.creationDate
                                                                  withModificationDate:phAsset.modificationDate
+                                                               withPreferredTransform:nil
                                                         ]];
                              }
                              processed++;
@@ -782,6 +792,7 @@ RCT_EXPORT_METHOD(openCropper:(NSDictionary *)options
                                                withRect:CGRectNull
                                        withCreationDate:creationDate
                                    withModificationDate:modificationDate
+                                 withPreferredTransform:nil
                           ]);
         }]];
     }
@@ -908,6 +919,7 @@ RCT_EXPORT_METHOD(openCropper:(NSDictionary *)options
                                            withRect:cropRect
                                    withCreationDate:self.croppingFile[@"creationDate"]
                                withModificationDate:self.croppingFile[@"modificationDate"]
+                             withPreferredTransform:nil
                       ]);
     }]];
 }
