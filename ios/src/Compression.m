@@ -98,10 +98,47 @@
     
     [[NSFileManager defaultManager] removeItemAtURL:outputURL error:nil];
     AVURLAsset *asset = [AVURLAsset URLAssetWithURL:inputURL options:nil];
-    AVAssetExportSession *exportSession = [[AVAssetExportSession alloc] initWithAsset:asset presetName:preset];
-    exportSession.shouldOptimizeForNetworkUse = YES;
+    
+    //inspired from https://stackoverflow.com/questions/20402106/how-to-correct-orientation-of-video-in-objective-c/28056569
+    NSError *error = nil;
+
+    AVMutableComposition *composition = [AVMutableComposition composition];
+    AVMutableCompositionTrack *compositionVideoTrack = [composition addMutableTrackWithMediaType:AVMediaTypeVideo preferredTrackID:kCMPersistentTrackID_Invalid];
+    AVMutableCompositionTrack *compositionAudioTrack = [composition addMutableTrackWithMediaType:AVMediaTypeAudio preferredTrackID:kCMPersistentTrackID_Invalid];
+    
+    AVAssetTrack *videoTrack = [[asset tracksWithMediaType:AVMediaTypeVideo] firstObject];
+    AVAssetTrack *audioTrack = [[asset tracksWithMediaType:AVMediaTypeAudio] firstObject];
+    [compositionVideoTrack insertTimeRange:CMTimeRangeMake(kCMTimeZero, asset.duration) ofTrack:videoTrack atTime:kCMTimeZero error:&error];
+    [compositionAudioTrack insertTimeRange:CMTimeRangeMake(kCMTimeZero, asset.duration) ofTrack:audioTrack atTime:kCMTimeZero error:&error];
+
+    CGAffineTransform transformToApply = videoTrack.preferredTransform;
+    AVMutableVideoCompositionLayerInstruction *layerInstruction = [AVMutableVideoCompositionLayerInstruction videoCompositionLayerInstructionWithAssetTrack:compositionVideoTrack];
+    [layerInstruction setTransform:transformToApply atTime:kCMTimeZero];
+    [layerInstruction setOpacity:0.0 atTime:asset.duration];
+
+    AVMutableVideoCompositionInstruction *instruction = [AVMutableVideoCompositionInstruction videoCompositionInstruction];
+    instruction.timeRange = CMTimeRangeMake( kCMTimeZero, asset.duration);
+    instruction.layerInstructions = @[layerInstruction];
+
+    AVMutableVideoComposition *videoComposition = [AVMutableVideoComposition videoComposition];
+    videoComposition.instructions = @[instruction];
+    videoComposition.frameDuration = CMTimeMake(1, 30); //select the frames per second
+    videoComposition.renderScale = 1.0;
+    
+    CGSize naturalSize = [[[asset tracksWithMediaType:AVMediaTypeVideo] objectAtIndex:0] naturalSize];
+    CGSize size = CGSizeApplyAffineTransform(naturalSize, videoTrack.preferredTransform);
+    CGFloat width = fabs(size.width);
+    CGFloat height = fabs(size.height);
+    videoComposition.renderSize = CGSizeMake(width, height);
+
+    AVAssetExportSession *exportSession = [[AVAssetExportSession alloc] initWithAsset:composition presetName:preset];
+
     exportSession.outputURL = outputURL;
     exportSession.outputFileType = AVFileTypeMPEG4;
+    exportSession.videoComposition = videoComposition;
+    exportSession.shouldOptimizeForNetworkUse = NO;
+    exportSession.timeRange = CMTimeRangeMake(kCMTimeZero, asset.duration);
+
     
     [exportSession exportAsynchronouslyWithCompletionHandler:^(void) {
         handler(exportSession);
