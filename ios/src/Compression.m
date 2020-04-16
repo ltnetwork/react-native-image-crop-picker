@@ -123,9 +123,10 @@
         instruction.timeRange = CMTimeRangeMake( kCMTimeZero, asset.duration);
         instruction.layerInstructions = @[layerInstruction];
         
+        float fps = videoTrack.nominalFrameRate;
         AVMutableVideoComposition *videoComposition = [AVMutableVideoComposition videoComposition];
         videoComposition.instructions = @[instruction];
-        videoComposition.frameDuration = CMTimeMake(1, 30); //select the frames per second
+        videoComposition.frameDuration = CMTimeMake(1, fps); //select the frames per second
         videoComposition.renderScale = 1.0;
         
         CGSize naturalSize = [[[asset tracksWithMediaType:AVMediaTypeVideo] objectAtIndex:0] naturalSize];
