@@ -1,5 +1,6 @@
 package com.reactnative.ivpusic.imagepicker;
 
+import android.annotation.TargetApi;
 import android.content.ContentUris;
 import android.content.Context;
 import android.database.Cursor;
@@ -15,9 +16,10 @@ import java.io.IOException;
 import java.io.InputStream;
 
 class RealPathUtil {
+    @TargetApi(Build.VERSION_CODES.KITKAT)
     static String getRealPathFromURI(final Context context, final Uri uri) throws IOException {
 
-        final boolean isKitKat = Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT;
+        final boolean isKitKat = Build.VERSION.SDK_INT == Build.VERSION_CODES.KITKAT;
 
         // DocumentProvider
         if (isKitKat && DocumentsContract.isDocumentUri(context, uri)) {
@@ -103,6 +105,7 @@ class RealPathUtil {
     private static File writeToFile(Context context, String fileName, Uri uri) {
         String tmpDir = context.getCacheDir() + "/react-native-image-crop-picker";
         Boolean created = new File(tmpDir).mkdir();
+        fileName = fileName.substring(fileName.lastIndexOf('/') + 1);
         File path = new File(tmpDir);
         File file = new File(path, fileName);
         try {
@@ -145,8 +148,9 @@ class RealPathUtil {
             cursor = context.getContentResolver().query(uri, projection, selection, selectionArgs,
                     null);
             if (cursor != null && cursor.moveToFirst()) {
-                final int index = cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA);
-                String path = cursor.getString(index);
+                // Fall back to writing to file if _data column does not exist
+                final int index = cursor.getColumnIndex(MediaStore.MediaColumns.DATA);
+                String path = index > -1 ? cursor.getString(index) : null;
                 if (path != null) {
                     return cursor.getString(index);
                 } else {
@@ -196,6 +200,7 @@ class RealPathUtil {
         return "com.google.android.apps.photos.content".equals(uri.getAuthority());
     }
 
+    @TargetApi(Build.VERSION_CODES.KITKAT)
     private static String getPathToNonPrimaryVolume(Context context, String tag) {
         File[] volumes = context.getExternalCacheDirs();
         if (volumes != null) {

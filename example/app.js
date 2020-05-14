@@ -35,16 +35,17 @@ export default class App extends Component {
     };
   }
 
-  pickSingleWithCamera(cropping) {
+  pickSingleWithCamera(cropping, mediaType='photo') {
     ImagePicker.openCamera({
       cropping: cropping,
       width: 500,
       height: 500,
       includeExif: true,
+      mediaType,
     }).then(image => {
       console.log('received image', image);
       this.setState({
-        image: {uri: image.path, width: image.width, height: image.height},
+        image: {uri: image.path, width: image.width, height: image.height, mime: image.mime},
         images: null
       });
     }).catch(e => alert(e));
@@ -106,15 +107,16 @@ export default class App extends Component {
     });
   }
 
-  pickSingle(cropit, circular=false) {
+  pickSingle(cropit, circular=false, mediaType) {
     ImagePicker.openPicker({
-      width: 300,
-      height: 300,
+      width: 500,
+      height: 500,
       cropping: cropit,
       cropperCircleOverlay: circular,
-      compressImageMaxWidth: 640,
-      compressImageMaxHeight: 480,
-      compressImageQuality: 0.5,
+      sortOrder: 'none',
+      compressImageMaxWidth: 1000,
+      compressImageMaxHeight: 1000,
+      compressImageQuality: 1,
       compressVideoPreset: 'MediumQuality',
       includeExif: true,
     }).then(image => {
@@ -133,7 +135,9 @@ export default class App extends Component {
     ImagePicker.openPicker({
       multiple: true,
       waitAnimationEnd: false,
+      sortOrder: 'desc',
       includeExif: true,
+      forceJpg: true,
     }).then(images => {
       this.setState({
         image: null,
@@ -150,6 +154,7 @@ export default class App extends Component {
   }
 
   renderVideo(video) {
+    console.log('rendering video');
     return (<View style={{height: 300, width: 300}}>
       <Video source={{uri: video.uri, type: video.mime}}
          style={{position: 'absolute',
@@ -189,7 +194,10 @@ export default class App extends Component {
       </ScrollView>
 
       <TouchableOpacity onPress={() => this.pickSingleWithCamera(false)} style={styles.button}>
-        <Text style={styles.text}>Select Single With Camera</Text>
+        <Text style={styles.text}>Select Single Image With Camera</Text>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={() => this.pickSingleWithCamera(false, mediaType='video')} style={styles.button}>
+        <Text style={styles.text}>Select Single Video With Camera</Text>
       </TouchableOpacity>
       <TouchableOpacity onPress={() => this.pickSingleWithCamera(true)} style={styles.button}>
         <Text style={styles.text}>Select Single With Camera With Cropping</Text>
