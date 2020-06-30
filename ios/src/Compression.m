@@ -145,6 +145,9 @@
         instruction.layerInstructions = @[layerInstruction];
         
         float fps = videoTrack.nominalFrameRate;
+        if (fps > 60.0) {
+            fps = 60.0;
+        }
         AVMutableVideoComposition *videoComposition = [AVMutableVideoComposition videoComposition];
         videoComposition.instructions = @[instruction];
         videoComposition.frameDuration = CMTimeMake(1, fps); //select the frames per second
