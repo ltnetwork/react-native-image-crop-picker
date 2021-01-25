@@ -60,7 +60,7 @@ ImagePicker.openPicker({
 });
 ```
 
-**Android: The prop 'cropping' has been known to cause videos not to be display in the gallery on Android. Please do not set cropping to true when selecting videos.**
+**Android: The prop 'cropping' has been known to cause videos not to be displayed in the gallery on Android. Please do not set cropping to true when selecting videos.**
 
 
 ### Select from camera 
@@ -154,6 +154,7 @@ ImagePicker.clean().then(() => {
 
 #### Smart Album Types (ios)
 
+NOTE: Some of these types may not be available on all iOS versions. Be sure to check this to avoid issues.
 ```
 ['PhotoStream', 'Generic', 'Panoramas', 'Videos', 'Favorites', 'Timelapses', 'AllHidden', 'RecentlyAdded', 'Bursts', 'SlomoVideos', 'UserLibrary', 'SelfPortraits', 'Screenshots', 'DepthEffect', 'LivePhotos', 'Animated', 'LongExposure']
 ```
@@ -170,6 +171,7 @@ ImagePicker.clean().then(() => {
 | height                    | number | Selected image height                    |
 | mime                      | string | Selected image MIME type (image/jpeg, image/png) |
 | size                      | number | Selected image size in bytes             |
+| duration                  | number | Video duration time in milliseconds      |
 | data                      | base64 | Optional base64 selected file representation |
 | exif                      | object | Extracted exif data from image. Response format is platform specific |
 | cropRect                  | object | Cropped image rectangle (width, height, x, y)    |
@@ -260,6 +262,18 @@ android {
     ...
 }
 ```
+
+- Minimum Gradle version if you are using react-native-image-crop-picker >= 0.35.0
+
+```
+3.3.3
+3.4.3
+3.5.4
+3.6.4
+4.0.1
+```
+
+Reference for more details https://github.com/ivpusic/react-native-image-crop-picker/issues/1406
 
 - [Optional] If you want to use camera picker in your project, add following to `app/src/main/AndroidManifest.xml`
   - `<uses-permission android:name="android.permission.CAMERA"/>`
