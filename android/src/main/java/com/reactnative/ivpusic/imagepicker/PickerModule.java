@@ -342,6 +342,10 @@ class PickerModule extends ReactContextBaseJavaModule implements ActivityEventLi
 
             if (cropping || mediaType.equals("photo")) {
                 galleryIntent.setType("image/*");
+                if (cropping) {
+                    String[] mimetypes = {"image/jpeg", "image/png"};
+                    galleryIntent.putExtra(Intent.EXTRA_MIME_TYPES, mimetypes);
+                }
             } else if (mediaType.equals("video")) {
                 galleryIntent.setType("video/*");
             } else {
@@ -490,6 +494,13 @@ class PickerModule extends ReactContextBaseJavaModule implements ActivityEventLi
         return bmp;
     }
 
+    private static Long getVideoDuration(String path) {
+        MediaMetadataRetriever retriever = new MediaMetadataRetriever();
+        retriever.setDataSource(path);
+
+        return Long.parseLong(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION));
+    }
+
     private void getVideo(final Activity activity, final String path, final String mime) throws Exception {
         validateVideo(path);
         final String compressedVideoPath = getTmpDir(activity) + "/" + UUID.randomUUID().toString() + ".mp4";
@@ -505,12 +516,14 @@ class PickerModule extends ReactContextBaseJavaModule implements ActivityEventLi
                         try {
                             Bitmap bmp = validateVideo(videoPath);
                             long modificationDate = new File(videoPath).lastModified();
+                            long duration = getVideoDuration(videoPath);
 
                             WritableMap video = new WritableNativeMap();
                             video.putInt("width", bmp.getWidth());
                             video.putInt("height", bmp.getHeight());
                             video.putString("mime", mime);
                             video.putInt("size", (int) new File(videoPath).length());
+                            video.putInt("duration", (int) duration);
                             video.putString("path", "file://" + videoPath);
                             video.putString("modificationDate", String.valueOf(modificationDate));
 
