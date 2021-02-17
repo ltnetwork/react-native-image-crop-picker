@@ -9,7 +9,7 @@ declare module "react-native-image-crop-picker" {
         | '960x540'
         | '1280x720'
         | '1920x1080'
-        | 'HEVC3840x2160'
+        | '3840x2160'
         | 'LowQuality'
         | 'MediumQuality'
         | 'HighestQuality'
