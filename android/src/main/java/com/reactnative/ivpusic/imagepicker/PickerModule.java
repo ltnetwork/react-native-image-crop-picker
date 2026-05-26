@@ -413,13 +413,18 @@ class PickerModule extends ReactContextBaseJavaModule implements ActivityEventLi
         resultCollector.setup(promise, false);
 
         final Uri uri = Uri.parse(options.getString("path"));
-        permissionsCheck(activity, promise, Collections.singletonList(Manifest.permission.WRITE_EXTERNAL_STORAGE), new Callable<Void>() {
-            @Override
-            public Void call() {
-                startCropping(activity, uri);
-                return null;
-            }
-        });
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            startCropping(activity, uri);
+        } else {
+            permissionsCheck(activity, promise, Collections.singletonList(Manifest.permission.WRITE_EXTERNAL_STORAGE), new Callable<Void>() {
+                @Override
+                public Void call() {
+                    startCropping(activity, uri);
+                    return null;
+                }
+            });
+        }
     }
 
     private String getBase64StringFromFile(String absoluteFilePath) {
